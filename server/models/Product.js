@@ -67,7 +67,7 @@ ProductSchema.virtual('thumbnail').get(function () {
   return this.images?.length ? this.images[0] : null;
 });
 
-ProductSchema.pre('save', function (next) {
+ProductSchema.pre('save', function () {
   if (this.isModified('name')) {
     this.slug = this.name
       .toLowerCase()
@@ -76,7 +76,6 @@ ProductSchema.pre('save', function (next) {
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '');
   }
-  next();
 });
 
 module.exports = mongoose.model('Product', ProductSchema);

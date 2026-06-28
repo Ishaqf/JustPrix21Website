@@ -48,7 +48,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes — uncomment as each one is built:
 app.use('/api/users',    require('./routes/userRoutes'));
-// app.use('/api/products', require('./routes/productRoutes'));
+app.use('/api/products', require('./routes/productRoutes'));
 // app.use('/api/orders',   require('./routes/orderRoutes'));
 // app.use('/api/reviews',  require('./routes/reviewRoutes'));
 // app.use('/api/reels',    require('./routes/reelRoutes'));
@@ -63,10 +63,27 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
+  let statusCode = res.statusCode !== 200 ? res.statusCode : 500;
+  let message = err.message;
+
+  // Controllers set res.status() before throwing for their own business
+  // errors (404/400/403/...); these three are raw Mongoose/driver errors
+  // that would otherwise fall through as an opaque 500.
+  if (err.name === 'ValidationError') {
+    statusCode = 400;
+    message = Object.values(err.errors).map((e) => e.message).join(', ');
+  } else if (err.name === 'CastError') {
+    statusCode = 400;
+    message = `Identifiant invalide : ${err.value}`;
+  } else if (err.code === 11000) {
+    statusCode = 400;
+    const field = Object.keys(err.keyValue || {})[0];
+    message = `Cette valeur existe déjà pour le champ "${field}"`;
+  }
+
   res.status(statusCode).json({
     success: false,
-    message: err.message,
+    message,
     stack: process.env.NODE_ENV === 'production' ? null : err.stack,
   });
 });
