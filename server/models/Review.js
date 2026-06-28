@@ -29,9 +29,14 @@ ReviewSchema.statics.recalcRating = async function (productId) {
   }
 };
 
-ReviewSchema.post('save', function () { this.constructor.recalcRating(this.product); });
-ReviewSchema.post('deleteOne', { document: true, query: false }, function () {
-  this.constructor.recalcRating(this.product);
+// async + await here matters: without it, the hook fires but isn't part of
+// the promise chain, so save()/deleteOne() resolves before the product's
+// rating/numReviews are actually updated.
+ReviewSchema.post('save', async function () {
+  await this.constructor.recalcRating(this.product);
+});
+ReviewSchema.post('deleteOne', { document: true, query: false }, async function () {
+  await this.constructor.recalcRating(this.product);
 });
 
 module.exports = mongoose.model('Review', ReviewSchema);
