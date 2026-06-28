@@ -49,7 +49,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Routes — uncomment as each one is built:
 app.use('/api/users',    require('./routes/userRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
-// app.use('/api/orders',   require('./routes/orderRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/products/:productId/reviews', require('./routes/reviewRoutes').nested);
 app.use('/api/reviews', require('./routes/reviewRoutes').standalone);
 // app.use('/api/reels',    require('./routes/reelRoutes'));
