@@ -10,6 +10,12 @@ const connectDB = require('./config/db');
 
 connectDB();
 
+require('./models/User');
+require('./models/Product');
+require('./models/Review');
+require('./models/Order');
+require('./models/Reel');
+
 const app = express();
 app.set('trust proxy', 1);
 
