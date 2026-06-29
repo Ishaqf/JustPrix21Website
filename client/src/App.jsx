@@ -9,6 +9,11 @@ import Login from './pages/Login';
 import Shop from './pages/Shop';
 import ProductDetail from './pages/ProductDetail';
 import AffaireDetail from './pages/AffaireDetail';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import OrderDetail from './pages/OrderDetail';
+import OrderHistory from './pages/OrderHistory';
+import TrackOrder from './pages/TrackOrder';
 import NotFound from './pages/NotFound';
 import AdminDashboard from './pages/admin/Dashboard';
 
@@ -22,11 +27,16 @@ const router = createBrowserRouter([
       { path: 'shop', element: <Shop /> },
       { path: 'products/:slug', element: <ProductDetail /> },
       { path: 'affaires/:id', element: <AffaireDetail /> },
+      { path: 'cart', element: <Cart /> },
+      { path: 'suivi-commande', element: <TrackOrder /> },
       {
         element: <ProtectedRoute />,
         children: [
-          // Private customer routes (cart, checkout, orders, profile,
-          // wishlist) mount here starting Step 19/20.
+          { path: 'checkout', element: <Checkout /> },
+          { path: 'orders', element: <OrderHistory /> },
+          { path: 'orders/:id', element: <OrderDetail /> },
+          // Private customer routes (profile, wishlist) mount here
+          // starting Step 20.
         ],
       },
     ],

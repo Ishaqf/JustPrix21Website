@@ -3,6 +3,7 @@ const asyncHandler = require('express-async-handler');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const { sendOrderConfirmation, sendAdminOrderAlert } = require('../utils/email');
+const { resolveDeliveryRate } = require('../utils/deliveryRate');
 
 const VALID_TRANSITIONS = {
   pending: ['confirmed', 'cancelled'],
@@ -51,6 +52,15 @@ const createOrder = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('La commande doit contenir au moins un article');
   }
+
+  // Computed before the transaction starts (it may call out to the real
+  // Yalidine API) and never trusted from the client — same resolver
+  // Checkout's live-quote endpoint uses, so the price charged here always
+  // matches what the customer saw on screen.
+  const { price: shippingPrice } = await resolveDeliveryRate(
+    shippingAddress?.wilaya,
+    (deliveryType || 'home') === 'stopdesk'
+  );
 
   const session = await mongoose.startSession();
   let order;
@@ -133,9 +143,6 @@ const createOrder = asyncHandler(async (req, res) => {
         }
       }
 
-      // Real shipping cost comes from the Yalidine-backed endpoint built in
-      // Step 11; until checkout calls that, shippingPrice stays 0 here.
-      const shippingPrice = 0;
       const taxPrice = 0;
       const totalPrice = subtotal + shippingPrice + taxPrice;
 
@@ -209,6 +216,35 @@ const getOrder = asyncHandler(async (req, res) => {
   }
 
   res.status(200).json({ success: true, message: 'Commande récupérée', data: order });
+});
+
+// @desc    Public order tracking by order id + the phone number used at
+//          checkout — no login required (TrackOrder page, /suivi-commande)
+// @route   GET /api/orders/track/:id?phone=...
+// @access  Public
+const trackOrder = asyncHandler(async (req, res) => {
+  const phone = String(req.query.phone || '').trim();
+  if (!phone) {
+    res.status(400);
+    throw new Error('Le numéro de téléphone est obligatoire');
+  }
+
+  // A malformed id would otherwise CastError into a raw 400 — this is a
+  // public-facing form where a typo is likely, so it gets folded into the
+  // same friendly "not found" response as a genuine mismatch.
+  let order;
+  try {
+    order = await Order.findById(req.params.id);
+  } catch {
+    order = null;
+  }
+
+  if (!order || order.shippingAddress.phone !== phone) {
+    res.status(404);
+    throw new Error("Commande introuvable. Vérifiez l'identifiant et le numéro de téléphone.");
+  }
+
+  res.status(200).json({ success: true, message: 'Commande trouvée', data: order });
 });
 
 // @desc    List + search all orders, with aggregated stats
@@ -439,6 +475,7 @@ module.exports = {
   createOrder,
   getMyOrders,
   getOrder,
+  trackOrder,
   getAllOrders,
   updateOrderStatus,
   cancelOrder,
