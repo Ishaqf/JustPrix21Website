@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { SHOP_INFO } from '../../utils/shopInfo';
-
-const WA_URL = `https://wa.me/${SHOP_INFO.whatsappNumber}?text=${encodeURIComponent(SHOP_INFO.whatsappMessage)}`;
+import { WHATSAPP_URL } from '../../utils/shopInfo';
 
 const WhatsAppButton = () => {
   const [hovered, setHovered] = useState(false);
@@ -62,7 +60,7 @@ const WhatsAppButton = () => {
           />
 
           <a
-            href={WA_URL}
+            href={WHATSAPP_URL}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Discuter sur WhatsApp"

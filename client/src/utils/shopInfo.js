@@ -15,3 +15,7 @@ export const SHOP_INFO = {
   threadsHandle: '@justeprix21',
   facebookUrl: 'https://www.facebook.com/p/Le-juste-prix-100069579070454/',
 };
+
+// Precomputed once here rather than rebuilt at every call site
+// (WhatsAppButton.jsx, Home.jsx's CTA banner, ...).
+export const WHATSAPP_URL = `https://wa.me/${SHOP_INFO.whatsappNumber}?text=${encodeURIComponent(SHOP_INFO.whatsappMessage)}`;

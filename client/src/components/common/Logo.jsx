@@ -1,18 +1,12 @@
 import { Link } from 'react-router-dom';
 
-// No final logo art yet (client hasn't provided client/public/logo.svg) —
-// this is a CSS wordmark built straight from the brand spec: ink-black
-// "JustPrix" text with a small terracotta "21" stamp. Swap for <img> once
-// the real files land, same as noted in CLAUDE.md.
-const Logo = ({ className = '' }) => (
-  <Link
-    to="/"
-    className={`flex items-center gap-1 text-2xl font-extrabold text-[var(--color-ink)] ${className}`}
-  >
-    JustPrix
-    <span className="rounded-md bg-[var(--color-accent)] px-1.5 py-0.5 text-base leading-none text-white">
-      21
-    </span>
+// Real locked logo art landed in public/ (Step 17) — pill.png is the
+// compact wordmark-only crop, used here for Navbar/Footer. className
+// controls size from the call site (e.g. h-10 default, larger on Home's
+// hero) — aspect-ratio is fixed so it never lays out distorted.
+const Logo = ({ className = 'h-10' }) => (
+  <Link to="/" className="inline-flex items-center">
+    <img src="/pill.png" alt="JustPrix21" className={`w-auto ${className}`} style={{ aspectRatio: '1840 / 896' }} />
   </Link>
 );
 
