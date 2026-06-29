@@ -11,10 +11,12 @@ const {
   deleteOrder,
 } = require('../controllers/orderController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
+const validateRequest = require('../middleware/validateRequest');
+const { createOrderValidator } = require('../middleware/validators/orderValidators');
 
 // /mine and / (collection routes) must come before /:id so they aren't
 // swallowed by the param route.
-router.post('/', protect, createOrder);
+router.post('/', protect, createOrderValidator, validateRequest, createOrder);
 router.get('/mine', protect, getMyOrders);
 router.get('/', protect, adminOnly, getAllOrders);
 router.get('/:id', protect, getOrder);

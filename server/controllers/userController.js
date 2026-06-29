@@ -184,11 +184,6 @@ const resetPassword = asyncHandler(async (req, res) => {
 const googleAuth = asyncHandler(async (req, res) => {
   const { credential } = req.body;
 
-  if (!credential) {
-    res.status(400);
-    throw new Error('Le jeton Google est manquant');
-  }
-
   let payload;
   try {
     const ticket = await googleClient.verifyIdToken({

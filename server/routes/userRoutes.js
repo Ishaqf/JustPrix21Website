@@ -16,15 +16,24 @@ const {
   clearWishlist,
 } = require('../controllers/wishlistController');
 const { protect } = require('../middleware/authMiddleware');
+const validateRequest = require('../middleware/validateRequest');
+const {
+  registerValidator,
+  loginValidator,
+  updateMeValidator,
+  forgotPasswordValidator,
+  resetPasswordValidator,
+  googleAuthValidator,
+} = require('../middleware/validators/userValidators');
 
-router.post('/register', register);
-router.post('/login', login);
-router.post('/forgot-password', forgotPassword);
-router.put('/reset-password/:token', resetPassword);
-router.post('/auth/google', googleAuth);
+router.post('/register', registerValidator, validateRequest, register);
+router.post('/login', loginValidator, validateRequest, login);
+router.post('/forgot-password', forgotPasswordValidator, validateRequest, forgotPassword);
+router.put('/reset-password/:token', resetPasswordValidator, validateRequest, resetPassword);
+router.post('/auth/google', googleAuthValidator, validateRequest, googleAuth);
 
 router.get('/me', protect, getMe);
-router.put('/me', protect, updateMe);
+router.put('/me', protect, updateMeValidator, validateRequest, updateMe);
 
 // Always scoped to req.user._id (set by `protect`) — never accept a userId
 // from params/body, so a user can only ever touch their own wishlist.

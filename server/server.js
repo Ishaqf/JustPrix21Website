@@ -3,6 +3,7 @@ const cors    = require('cors');
 const morgan  = require('morgan');
 const helmet  = require('helmet');
 const path    = require('path');
+const sanitizeRequest = require('./middleware/sanitizeRequest');
 //const mongoSanitize = require('express-mongo-sanitize');
 
 require('dotenv').config();
@@ -42,6 +43,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(sanitizeRequest);
 //app.use(mongoSanitize());
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
