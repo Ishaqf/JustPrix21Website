@@ -1,9 +1,12 @@
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const asyncHandler = require('express-async-handler');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const { sendPasswordResetEmail } = require('../utils/email');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // @desc    Register a new user
 // @route   POST /api/users/register
@@ -175,4 +178,71 @@ const resetPassword = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { register, login, getMe, updateMe, forgotPassword, resetPassword };
+// @desc    Sign in (or sign up) with a Google ID token
+// @route   POST /api/users/auth/google
+// @access  Public
+const googleAuth = asyncHandler(async (req, res) => {
+  const { credential } = req.body;
+
+  if (!credential) {
+    res.status(400);
+    throw new Error('Le jeton Google est manquant');
+  }
+
+  let payload;
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    payload = ticket.getPayload();
+  } catch {
+    res.status(401);
+    throw new Error('Jeton Google invalide');
+  }
+
+  // email_verified guards against trusting an email claim Google itself
+  // hasn't confirmed the account actually owns — skipping this check would
+  // let an attacker "log in as" any email via an unverified Google account.
+  if (!payload.email_verified) {
+    res.status(401);
+    throw new Error('Email Google non vérifié');
+  }
+
+  const { email, name, picture, sub } = payload;
+
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    user = await User.create({
+      name,
+      email,
+      password: crypto.randomBytes(32).toString('hex'),
+      googleId: sub,
+      avatar: picture || '',
+    });
+  } else {
+    if (!user.googleId) user.googleId = sub;
+    if (!user.avatar && picture) user.avatar = picture;
+    if (user.isModified()) await user.save();
+  }
+
+  if (!user.isActive) {
+    res.status(403);
+    throw new Error('Ce compte est désactivé');
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Connexion réussie',
+    data: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user._id),
+    },
+  });
+});
+
+module.exports = { register, login, getMe, updateMe, forgotPassword, resetPassword, googleAuth };

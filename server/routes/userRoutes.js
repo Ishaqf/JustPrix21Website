@@ -7,6 +7,7 @@ const {
   updateMe,
   forgotPassword,
   resetPassword,
+  googleAuth,
 } = require('../controllers/userController');
 const {
   getWishlist,
@@ -20,6 +21,7 @@ router.post('/register', register);
 router.post('/login', login);
 router.post('/forgot-password', forgotPassword);
 router.put('/reset-password/:token', resetPassword);
+router.post('/auth/google', googleAuth);
 
 router.get('/me', protect, getMe);
 router.put('/me', protect, updateMe);
