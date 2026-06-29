@@ -58,7 +58,18 @@ const useWishlist = () => {
     [isWishlisted, add, remove]
   );
 
-  return { items, isLoaded, isWishlisted, add, remove, toggle, fetchWishlist, reset };
+  const clearAll = useCallback(async () => {
+    const previous = useWishlistStore.getState().items;
+    setItems([]);
+    try {
+      await wishlistApi.clearWishlist();
+    } catch {
+      setItems(previous);
+      showToast('error', 'Impossible de vider la liste de souhaits');
+    }
+  }, [setItems, showToast]);
+
+  return { items, isLoaded, isWishlisted, add, remove, toggle, clearAll, fetchWishlist, reset };
 };
 
 export default useWishlist;

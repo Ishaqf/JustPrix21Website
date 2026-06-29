@@ -33,6 +33,9 @@ const updateMeValidator = [
   body('password')
     .optional()
     .isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères'),
+  body('currentPassword')
+    .if(body('password').exists())
+    .notEmpty().withMessage('Le mot de passe actuel est obligatoire pour le changer'),
 ];
 
 const forgotPasswordValidator = [

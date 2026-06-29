@@ -16,6 +16,8 @@ const {
   clearWishlist,
 } = require('../controllers/wishlistController');
 const { protect } = require('../middleware/authMiddleware');
+const { handleUpload } = require('../middleware/uploadMiddleware');
+const sanitizeRequest = require('../middleware/sanitizeRequest');
 const validateRequest = require('../middleware/validateRequest');
 const {
   registerValidator,
@@ -33,7 +35,10 @@ router.put('/reset-password/:token', resetPasswordValidator, validateRequest, re
 router.post('/auth/google', googleAuthValidator, validateRequest, googleAuth);
 
 router.get('/me', protect, getMe);
-router.put('/me', protect, updateMeValidator, validateRequest, updateMe);
+// multer (handleUpload) only populates req.body for multipart requests once
+// it runs, so sanitizeRequest (already mounted globally before routing)
+// has nothing to sanitize yet here — same reasoning as productRoutes.js.
+router.put('/me', protect, handleUpload('avatar', 1), sanitizeRequest, updateMeValidator, validateRequest, updateMe);
 
 // Always scoped to req.user._id (set by `protect`) — never accept a userId
 // from params/body, so a user can only ever touch their own wishlist.

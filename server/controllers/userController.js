@@ -5,6 +5,7 @@ const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const { sendPasswordResetEmail } = require('../utils/email');
+const { uploadImage, deleteImage, getPublicIdFromUrl } = require('../utils/cloudinary');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -81,13 +82,62 @@ const getMe = asyncHandler(async (req, res) => {
 // @route   PUT /api/users/me
 // @access  Private
 const updateMe = asyncHandler(async (req, res) => {
-  const allowedFields = ['name', 'phone', 'address', 'avatar', 'password'];
+  const allowedFields = ['name', 'phone'];
 
   allowedFields.forEach((field) => {
     if (req.body[field] !== undefined) {
       req.user[field] = req.body[field];
     }
   });
+
+  // Changing the password requires proving you still know the current
+  // one — `protect` loads req.user with .select('-password'), so it has
+  // to be re-fetched with the hash included just for this check. Without
+  // this, a leaked/stolen token alone would be enough to silently lock
+  // the real owner out by changing their password.
+  if (req.body.password !== undefined) {
+    if (!req.body.currentPassword) {
+      res.status(400);
+      throw new Error('Le mot de passe actuel est obligatoire pour le changer');
+    }
+    const userWithPassword = await User.findById(req.user._id).select('+password');
+    if (!(await userWithPassword.matchPassword(req.body.currentPassword))) {
+      res.status(401);
+      throw new Error('Mot de passe actuel incorrect');
+    }
+    req.user.password = req.body.password;
+  }
+
+  // Profile.jsx submits multipart/form-data (so it can carry the avatar
+  // file in the same request) — a nested object like address can't travel
+  // as a plain form field, so the client JSON-stringifies it, same pattern
+  // productController uses for `specs` on multipart product forms.
+  if (req.body.address !== undefined) {
+    if (typeof req.body.address === 'string') {
+      try {
+        req.user.address = JSON.parse(req.body.address);
+      } catch {
+        res.status(400);
+        throw new Error('Le champ "address" doit être un JSON valide');
+      }
+    } else {
+      req.user.address = req.body.address;
+    }
+  }
+
+  const file = req.files?.[0];
+  if (file) {
+    const previousPublicId = getPublicIdFromUrl(req.user.avatar);
+    const { url } = await uploadImage(file.buffer, 'justprix21/avatars');
+    req.user.avatar = url;
+    if (previousPublicId) {
+      try {
+        await deleteImage(previousPublicId);
+      } catch (err) {
+        console.error(`Échec suppression Cloudinary (${previousPublicId}):`, err.message);
+      }
+    }
+  }
 
   const updatedUser = await req.user.save();
 
