@@ -1,6 +1,9 @@
+const crypto = require('crypto');
+const mongoose = require('mongoose');
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
+const { sendPasswordResetEmail } = require('../utils/email');
 
 // @desc    Register a new user
 // @route   POST /api/users/register
@@ -100,4 +103,76 @@ const updateMe = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { register, login, getMe, updateMe };
+// @desc    Request a password reset email
+// @route   POST /api/users/forgot-password
+// @access  Public
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const respondGeneric = () =>
+    res.status(200).json({
+      success: true,
+      message: 'Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.',
+    });
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return respondGeneric();
+  }
+
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const expireMinutes = Number(process.env.RESET_PASSWORD_EXPIRE_MINUTES) || 30;
+
+  user.resetPasswordToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+  user.resetPasswordExpire = new Date(Date.now() + expireMinutes * 60 * 1000);
+  await user.save();
+
+  const resetUrl = `${process.env.CLIENT_ORIGIN}/reset-password/${rawToken}`;
+
+  try {
+    await sendPasswordResetEmail(user, resetUrl, expireMinutes);
+  } catch (err) {
+    console.error('Échec envoi email réinitialisation:', err.message);
+  }
+
+  return respondGeneric();
+});
+
+// @desc    Reset password using the emailed token
+// @route   PUT /api/users/reset-password/:token
+// @access  Public
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpire: mongoose.trusted({ $gt: new Date() }),
+  });
+
+  if (!user) {
+    res.status(400);
+    throw new Error('Lien de réinitialisation invalide ou expiré');
+  }
+
+  user.password = password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Mot de passe réinitialisé avec succès',
+    data: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user._id),
+    },
+  });
+});
+
+module.exports = { register, login, getMe, updateMe, forgotPassword, resetPassword };
