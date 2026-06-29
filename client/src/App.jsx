@@ -6,6 +6,9 @@ import AdminRoute from './components/common/AdminRoute';
 import WhatsAppButton from './components/common/WhatsAppButton';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Shop from './pages/Shop';
+import ProductDetail from './pages/ProductDetail';
+import AffaireDetail from './pages/AffaireDetail';
 import NotFound from './pages/NotFound';
 import AdminDashboard from './pages/admin/Dashboard';
 
@@ -16,6 +19,9 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: 'login', element: <Login /> },
+      { path: 'shop', element: <Shop /> },
+      { path: 'products/:slug', element: <ProductDetail /> },
+      { path: 'affaires/:id', element: <AffaireDetail /> },
       {
         element: <ProtectedRoute />,
         children: [
