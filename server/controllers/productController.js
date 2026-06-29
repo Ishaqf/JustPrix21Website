@@ -67,11 +67,12 @@ const applyWritableFields = (res, target, body) => {
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
-  const { search, category, brand, minPrice, maxPrice, sort, page = 1, limit = 12 } = req.query;
+  const { search, category, brand, minPrice, maxPrice, isFeatured, sort, page = 1, limit = 12 } = req.query;
 
   const filter = { isActive: true };
   if (category) filter.category = category;
   if (brand) filter.brand = brand;
+  if (isFeatured !== undefined) filter.isFeatured = String(isFeatured) === 'true';
 
   // sanitizeFilter wraps any non-$eq operator (e.g. our own $gte/$lte) in an
   // extra { $eq: ... } unless marked trusted — but only after Number()

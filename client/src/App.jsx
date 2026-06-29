@@ -1,12 +1,42 @@
-function App() {
-  return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <h1 style={{ color: 'var(--color-accent-dark)' }}>JustPrix21</h1>
-      <p style={{ color: 'var(--color-muted)' }}>
-        Frontend en construction — routage et layout arrivent à l'étape suivante.
-      </p>
-    </div>
-  )
-}
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import MainLayout from './components/layout/MainLayout';
+import AdminLayout from './components/layout/AdminLayout';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import AdminRoute from './components/common/AdminRoute';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import NotFound from './pages/NotFound';
+import AdminDashboard from './pages/admin/Dashboard';
 
-export default App
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <MainLayout />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: 'login', element: <Login /> },
+      {
+        element: <ProtectedRoute />,
+        children: [
+          // Private customer routes (cart, checkout, orders, profile,
+          // wishlist) mount here starting Step 19/20.
+        ],
+      },
+    ],
+  },
+  {
+    path: '/admin',
+    element: <AdminRoute />,
+    children: [
+      {
+        element: <AdminLayout />,
+        children: [{ index: true, element: <AdminDashboard /> }],
+      },
+    ],
+  },
+  { path: '*', element: <NotFound /> },
+]);
+
+const App = () => <RouterProvider router={router} />;
+
+export default App;
