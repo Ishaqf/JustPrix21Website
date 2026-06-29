@@ -1,13 +1,11 @@
 import { MessageCircle } from 'lucide-react';
 import { SHOP_INFO } from '../../utils/shopInfo';
 
-const DEFAULT_MESSAGE = 'Bonjour, je suis intéressé(e) par vos produits sur JustPrix21.';
-
 // lucide-react has no WhatsApp brand glyph (it's a generic icon set, not
 // brand logos) — MessageCircle stands in. Swap for the real WhatsApp mark
 // (e.g. via react-icons) if the exact logo matters more than the behavior.
 const WhatsAppButton = () => {
-  const href = `https://wa.me/${SHOP_INFO.whatsappNumber}?text=${encodeURIComponent(DEFAULT_MESSAGE)}`;
+  const href = `https://wa.me/${SHOP_INFO.whatsappNumber}?text=${encodeURIComponent(SHOP_INFO.whatsappMessage)}`;
 
   return (
     <a
