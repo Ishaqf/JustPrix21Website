@@ -1,10 +1,14 @@
 import { Outlet } from 'react-router-dom';
+import Navbar from './Navbar';
+import Footer from './Footer';
 
-// Bare shell so routing can be verified now — the real Navbar/Footer
-// (Step 16) slot in here around the same <Outlet />.
 const MainLayout = () => (
-  <div>
-    <Outlet />
+  <div className="flex min-h-screen flex-col">
+    <Navbar />
+    <main className="flex-1">
+      <Outlet />
+    </main>
+    <Footer />
   </div>
 );
 

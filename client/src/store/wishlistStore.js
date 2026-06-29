@@ -22,6 +22,11 @@ const useWishlistStore = create((set, get) => ({
   optimisticRemove: (productId) => {
     set((state) => ({ items: state.items.filter((p) => p._id !== productId) }));
   },
+
+  // Local-only state reset on logout — NOT the backend "delete my
+  // wishlist" call (that's clearWishlist in api/wishlist.js). Named
+  // differently on purpose so the two aren't mistaken for each other.
+  reset: () => set({ items: [], isLoaded: false }),
 }));
 
 export default useWishlistStore;

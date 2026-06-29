@@ -12,6 +12,7 @@ const useWishlist = () => {
   const setItems = useWishlistStore((s) => s.setItems);
   const optimisticAdd = useWishlistStore((s) => s.optimisticAdd);
   const optimisticRemove = useWishlistStore((s) => s.optimisticRemove);
+  const reset = useWishlistStore((s) => s.reset);
   const showToast = useToastStore((s) => s.showToast);
 
   const fetchWishlist = useCallback(async () => {
@@ -57,7 +58,7 @@ const useWishlist = () => {
     [isWishlisted, add, remove]
   );
 
-  return { items, isLoaded, isWishlisted, add, remove, toggle, fetchWishlist };
+  return { items, isLoaded, isWishlisted, add, remove, toggle, fetchWishlist, reset };
 };
 
 export default useWishlist;
