@@ -1,20 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Smartphone, Headphones, Tv, Gamepad2, Laptop, Cpu } from 'lucide-react';
 import { CATEGORIES } from '../../utils/categories';
-
-const ICONS = {
-  phones: Smartphone,
-  accessories: Headphones,
-  tvs: Tv,
-  gaming: Gamepad2,
-  laptops: Laptop,
-  electronics: Cpu,
-};
+import { CATEGORY_ICONS } from '../../utils/categoryIcons';
 
 const CategoryGrid = () => (
   <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
     {CATEGORIES.map((cat) => {
-      const Icon = ICONS[cat.value];
+      const Icon = CATEGORY_ICONS[cat.value];
       return (
         <Link
           key={cat.value}
