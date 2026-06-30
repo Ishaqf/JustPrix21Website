@@ -9,6 +9,19 @@
   --color-muted: #8A7A6E;
 }
 
+@keyframes jp-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(60px, 40px) scale(1.12); }
+}
+@keyframes jp-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(-54px, 34px) scale(1.08); }
+}
+@keyframes jp-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(34px, -46px) scale(1.16); }
+}
+
 body {
   margin: 0;
   font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;

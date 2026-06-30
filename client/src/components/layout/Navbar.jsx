@@ -88,7 +88,7 @@ const Navbar = () => {
   const activeCategoryLabel = CATEGORIES.find((c) => c.value === activeCategory)?.label;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-black/5 bg-(--color-cream)">
+    <header className="sticky top-0 z-40 border-b border-black/6 bg-(--color-cream)/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
         <Logo />
 

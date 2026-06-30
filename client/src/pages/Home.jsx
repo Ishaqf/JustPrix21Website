@@ -50,61 +50,71 @@ const Home = () => {
 
   return (
     <div>
-      <section className="mx-auto max-w-7xl px-4 py-8">
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="min-w-0 lg:col-span-2">
-            <Logo className="h-16" />
-            <p className="mt-4 max-w-md text-(--color-muted)">
-              Téléphones, accessoires, téléviseurs, consoles et ordinateurs portables — au juste prix,
-              livrés partout en Algérie.
-            </p>
-            <Link
-              to="/shop"
-              className="mt-4 inline-block rounded-full bg-(--color-accent) px-6 py-2.5 text-sm font-semibold text-white hover:bg-(--color-accent-dark)"
-            >
-              Découvrir la boutique
-            </Link>
-
-            <h2 className="mt-10 mb-4 text-xl font-bold text-(--color-ink)">Produits en vedette</h2>
-            {productsError && <p className="text-sm text-(--color-muted)">Impossible de charger les produits.</p>}
-            {!productsError && (
-              <SlidingRow>
-                {productsLoading
-                  ? Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="w-44 shrink-0">
-                        <ProductCardSkeleton />
-                      </div>
-                    ))
-                  : featuredProducts.slice(0, 8).map((product) => (
-                      <div key={product._id} className="w-44 shrink-0">
-                        <ProductCard product={product} />
-                      </div>
-                    ))}
-              </SlidingRow>
-            )}
-            {!productsLoading && !productsError && featuredProducts.length === 0 && (
-              <p className="text-sm text-(--color-muted)">Aucun produit en vedette pour le moment.</p>
-            )}
-          </div>
-
-          <div>
-            <h2 className="mb-4 text-xl font-bold text-(--color-ink)">Vu sur Instagram</h2>
-            {reelsError && <p className="text-sm text-(--color-muted)">Impossible de charger les affaires.</p>}
-            {!reelsError && (
-              <div className="flex flex-col gap-2">
-                {reelsLoading
-                  ? Array.from({ length: 4 }).map((_, i) => <ReelCardSkeleton key={i} variant="compact" />)
-                  : activeReels.slice(0, 5).map((reel) => (
-                      <ReelCard key={reel._id} reel={reel} variant="compact" />
-                    ))}
-              </div>
-            )}
-            {!reelsLoading && !reelsError && activeReels.length === 0 && (
-              <p className="text-sm text-(--color-muted)">Aucune affaire en cours pour le moment.</p>
-            )}
-          </div>
+      {/* Aurora hero — full-width so blobs bleed to viewport edges */}
+      <div className="relative overflow-hidden">
+        {/* Animated gradient blobs */}
+        <div className="pointer-events-none absolute inset-0">
+          <div style={{ position:'absolute', width:'560px', height:'560px', borderRadius:'50%', top:'-170px', left:'-130px', background:'radial-gradient(circle,#D9A98A,transparent 70%)', filter:'blur(70px)', opacity:0.48, animation:'jp-drift-1 20s ease-in-out infinite' }} />
+          <div style={{ position:'absolute', width:'500px', height:'500px', borderRadius:'50%', top:'90px', right:'-150px', background:'radial-gradient(circle,#C08F6E,transparent 70%)', filter:'blur(80px)', opacity:0.36, animation:'jp-drift-2 26s ease-in-out infinite' }} />
+          <div style={{ position:'absolute', width:'540px', height:'540px', borderRadius:'50%', bottom:'-190px', left:'32%', background:'radial-gradient(circle,#E9C6AE,transparent 70%)', filter:'blur(90px)', opacity:0.42, animation:'jp-drift-3 30s ease-in-out infinite' }} />
         </div>
-      </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-10 pt-12">
+          <div className="grid gap-8 lg:grid-cols-3">
+            <div className="min-w-0 lg:col-span-2">
+              <Logo className="h-20" />
+              <p className="mt-5 max-w-md text-lg leading-relaxed text-(--color-muted)">
+                Téléphones, accessoires, téléviseurs, consoles et ordinateurs portables — au juste prix,
+                livrés partout en Algérie.
+              </p>
+              <Link
+                to="/shop"
+                className="mt-6 inline-block rounded-[14px] bg-(--color-accent) px-7 py-3 text-base font-bold text-white shadow-[0_8px_22px_rgba(192,143,110,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-(--color-accent-dark) hover:shadow-[0_12px_28px_rgba(192,143,110,0.45)]"
+              >
+                Découvrir la boutique
+              </Link>
+
+              <h2 className="mt-10 mb-4 text-xl font-bold text-(--color-ink)">Produits en vedette</h2>
+              {productsError && <p className="text-sm text-(--color-muted)">Impossible de charger les produits.</p>}
+              {!productsError && (
+                <SlidingRow>
+                  {productsLoading
+                    ? Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="w-52 shrink-0">
+                          <ProductCardSkeleton />
+                        </div>
+                      ))
+                    : featuredProducts.slice(0, 8).map((product) => (
+                        <div key={product._id} className="w-52 shrink-0">
+                          <ProductCard product={product} />
+                        </div>
+                      ))}
+                </SlidingRow>
+              )}
+              {!productsLoading && !productsError && featuredProducts.length === 0 && (
+                <p className="text-sm text-(--color-muted)">Aucun produit en vedette pour le moment.</p>
+              )}
+            </div>
+
+            <div>
+              <h2 className="mb-4 text-xl font-bold text-(--color-ink)">Vu sur Instagram</h2>
+              {reelsError && <p className="text-sm text-(--color-muted)">Impossible de charger les affaires.</p>}
+              {!reelsError && (
+                <div className="flex flex-col gap-2">
+                  {reelsLoading
+                    ? Array.from({ length: 4 }).map((_, i) => <ReelCardSkeleton key={i} variant="compact" />)
+                    : activeReels.slice(0, 5).map((reel) => (
+                        <ReelCard key={reel._id} reel={reel} variant="compact" />
+                      ))}
+                </div>
+              )}
+              {!reelsLoading && !reelsError && activeReels.length === 0 && (
+                <p className="text-sm text-(--color-muted)">Aucune affaire en cours pour le moment.</p>
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
 
       <section className="mx-auto max-w-7xl px-4 py-8">
         <h2 className="mb-4 text-xl font-bold text-(--color-ink)">Catégories</h2>
