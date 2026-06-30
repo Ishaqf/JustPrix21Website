@@ -20,25 +20,38 @@ const VALID_TRANSITIONS = {
 
 const TABS = ['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
-const today = () => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
+const PRESET_LABELS = {
+  all: 'Tout',
+  today: "Aujourd'hui",
+  week: 'Cette semaine',
+  month: 'Ce mois',
 };
 
-const PRESETS = {
-  all: { label: 'Tout', startDate: undefined, endDate: undefined },
-  today: { label: "Aujourd'hui", startDate: () => today().toISOString(), endDate: () => new Date().toISOString() },
-  week: {
-    label: 'Cette semaine',
-    startDate: () => { const d = today(); d.setDate(d.getDate() - d.getDay()); return d.toISOString(); },
-    endDate: () => new Date().toISOString(),
-  },
-  month: {
-    label: 'Ce mois',
-    startDate: () => { const d = today(); d.setDate(1); return d.toISOString(); },
-    endDate: () => new Date().toISOString(),
-  },
+// Compute start/end once at click time so the query key is stable between
+// renders. Computing endDate inline as new Date().toISOString() changes every
+// millisecond — TanStack Query sees a new key each render, cancels the
+// previous fetch, and data never settles.
+const buildDateRange = (key) => {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(0, 0, 0, 0);
+
+  if (key === 'today') {
+    return { startDate: midnight.toISOString(), endDate: now.toISOString() };
+  }
+  if (key === 'week') {
+    const start = new Date(midnight);
+    // France/Algeria use Monday as week start. getDay(): Sun=0 Mon=1 … Sat=6
+    const day = start.getDay();
+    start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
+    return { startDate: start.toISOString(), endDate: now.toISOString() };
+  }
+  if (key === 'month') {
+    const start = new Date(midnight);
+    start.setDate(1);
+    return { startDate: start.toISOString(), endDate: now.toISOString() };
+  }
+  return { startDate: undefined, endDate: undefined };
 };
 
 const StatBadge = ({ label, value, color }) => (
@@ -51,11 +64,18 @@ const StatBadge = ({ label, value, color }) => (
 const ManageOrders = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [preset, setPreset] = useState('all');
+  const [dateRange, setDateRange] = useState({ startDate: undefined, endDate: undefined });
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const showToast = useToastStore((s) => s.showToast);
   const queryClient = useQueryClient();
+
+  const handlePresetChange = (key) => {
+    setPreset(key);
+    setDateRange(buildDateRange(key));
+    setPage(1);
+  };
 
   const { data: detailOrder, isLoading: detailLoading } = useQuery({
     queryKey: ['order', selectedOrderId],
@@ -66,12 +86,11 @@ const ManageOrders = () => {
     enabled: Boolean(selectedOrderId),
   });
 
-  const resolvedPreset = PRESETS[preset];
   const queryParams = {
     status: activeTab === 'all' ? undefined : activeTab,
     search: search || undefined,
-    startDate: typeof resolvedPreset.startDate === 'function' ? resolvedPreset.startDate() : resolvedPreset.startDate,
-    endDate: typeof resolvedPreset.endDate === 'function' ? resolvedPreset.endDate() : resolvedPreset.endDate,
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate,
     page,
     limit: 20,
   };
@@ -160,11 +179,11 @@ const ManageOrders = () => {
 
       {/* Date presets */}
       <div className="mb-4 flex flex-wrap gap-2">
-        {Object.entries(PRESETS).map(([key, { label }]) => (
+        {Object.entries(PRESET_LABELS).map(([key, label]) => (
           <button
             key={key}
             type="button"
-            onClick={() => { setPreset(key); setPage(1); }}
+            onClick={() => handlePresetChange(key)}
             className={`rounded-full px-4 py-1.5 text-sm font-medium ${preset === key ? 'bg-(--color-accent) text-white' : 'bg-white text-(--color-ink)'}`}
           >
             {label}
