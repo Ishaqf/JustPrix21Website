@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Download, Trash2, Search } from 'lucide-react';
-import { getAllOrders, updateOrderStatus, deleteOrder } from '../../api/orders';
+import { Download, Trash2, Search, Eye, X, MapPin, CreditCard, Package } from 'lucide-react';
+import { getAllOrders, getOrder, updateOrderStatus, deleteOrder } from '../../api/orders';
 import useToastStore from '../../store/toastStore';
 import { formatPrice, formatDate } from '../../utils/formatters';
-import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '../../utils/orderStatus';
+import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, PAYMENT_METHOD_LABELS, DELIVERY_TYPE_LABELS } from '../../utils/orderStatus';
+import OrderTimeline from '../../components/common/OrderTimeline';
 import Skeleton from '../../components/common/Skeleton';
 
 // Mirrors server/controllers/orderController.js's VALID_TRANSITIONS.
@@ -52,8 +53,18 @@ const ManageOrders = () => {
   const [preset, setPreset] = useState('all');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
   const showToast = useToastStore((s) => s.showToast);
   const queryClient = useQueryClient();
+
+  const { data: detailOrder, isLoading: detailLoading } = useQuery({
+    queryKey: ['order', selectedOrderId],
+    queryFn: async () => {
+      const res = await getOrder(selectedOrderId);
+      return res.data.data;
+    },
+    enabled: Boolean(selectedOrderId),
+  });
 
   const resolvedPreset = PRESETS[preset];
   const queryParams = {
@@ -241,19 +252,29 @@ const ManageOrders = () => {
                       </td>
                       <td className="px-4 py-3 text-xs text-(--color-muted)">{formatDate(order.createdAt, { day: 'numeric', month: 'short' })}</td>
                       <td className="px-4 py-3">
-                        {order.status === 'cancelled' && (
+                        <div className="flex items-center gap-1">
                           <button
                             type="button"
-                            onClick={() => {
-                              if (window.confirm('Supprimer définitivement cette commande ?')) deleteMutation.mutate(order._id);
-                            }}
-                            disabled={deleteMutation.isPending}
-                            className="rounded-md p-1.5 text-(--color-muted) hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
-                            aria-label="Supprimer"
+                            onClick={() => setSelectedOrderId(order._id)}
+                            className="rounded-md p-1.5 text-(--color-muted) hover:bg-(--color-cream) hover:text-(--color-ink)"
+                            aria-label="Voir détail"
                           >
-                            <Trash2 size={14} />
+                            <Eye size={14} />
                           </button>
-                        )}
+                          {order.status === 'cancelled' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm('Supprimer définitivement cette commande ?')) deleteMutation.mutate(order._id);
+                              }}
+                              disabled={deleteMutation.isPending}
+                              className="rounded-md p-1.5 text-(--color-muted) hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                              aria-label="Supprimer"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -269,6 +290,148 @@ const ManageOrders = () => {
           <div className="flex gap-2">
             <button type="button" onClick={() => setPage((p) => p - 1)} disabled={page <= 1} className="rounded-lg border border-black/10 bg-white px-3 py-1.5 disabled:opacity-40">◀</button>
             <button type="button" onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages} className="rounded-lg border border-black/10 bg-white px-3 py-1.5 disabled:opacity-40">▶</button>
+          </div>
+        </div>
+      )}
+
+      {/* Order detail slide-over */}
+      {selectedOrderId && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setSelectedOrderId(null)} />
+          <div className="relative z-10 flex h-full w-full max-w-lg flex-col overflow-y-auto bg-white shadow-2xl">
+            {/* Header */}
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/5 bg-white px-6 py-4">
+              <div>
+                <p className="text-xs text-(--color-muted)">Détail commande</p>
+                <p className="font-mono text-sm font-bold text-(--color-accent-dark)">
+                  #{detailOrder?._id.slice(-8).toUpperCase() ?? '…'}
+                </p>
+              </div>
+              <button type="button" onClick={() => setSelectedOrderId(null)} className="rounded-lg p-2 hover:bg-(--color-cream)">
+                <X size={18} />
+              </button>
+            </div>
+
+            {detailLoading && (
+              <div className="flex flex-col gap-4 p-6">
+                {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10" />)}
+              </div>
+            )}
+
+            {detailOrder && (
+              <div className="flex flex-col gap-6 p-6">
+                {/* Status + date */}
+                <div className="flex items-center justify-between">
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${ORDER_STATUS_COLORS[detailOrder.status]}`}>
+                    {ORDER_STATUS_LABELS[detailOrder.status]}
+                  </span>
+                  <span className="text-xs text-(--color-muted)">{formatDate(detailOrder.createdAt)}</span>
+                </div>
+
+                {/* Timeline */}
+                {detailOrder.status !== 'cancelled' && (
+                  <div className="rounded-xl bg-(--color-cream) p-4">
+                    <OrderTimeline status={detailOrder.status} />
+                  </div>
+                )}
+                {detailOrder.status === 'cancelled' && (
+                  <div className="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-700">Commande annulée</div>
+                )}
+
+                {/* Client info */}
+                <div className="rounded-xl border border-black/5 p-4">
+                  <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-(--color-muted)">
+                    <Package size={13} /> Client
+                  </p>
+                  <p className="font-semibold text-(--color-ink)">{detailOrder.user?.name ?? detailOrder.shippingAddress.fullName}</p>
+                  {detailOrder.user?.email && <p className="text-sm text-(--color-muted)">{detailOrder.user.email}</p>}
+                  <p className="text-sm text-(--color-muted)">{detailOrder.shippingAddress.phone}</p>
+                </div>
+
+                {/* Address + delivery */}
+                <div className="rounded-xl border border-black/5 p-4">
+                  <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-(--color-muted)">
+                    <MapPin size={13} /> Livraison — {DELIVERY_TYPE_LABELS[detailOrder.deliveryType]}
+                  </p>
+                  <p className="text-sm text-(--color-ink)">{detailOrder.shippingAddress.fullName}</p>
+                  <p className="text-sm text-(--color-muted)">{detailOrder.shippingAddress.street}</p>
+                  <p className="text-sm text-(--color-muted)">{detailOrder.shippingAddress.city}, {detailOrder.shippingAddress.wilaya}</p>
+                </div>
+
+                {/* Payment */}
+                <div className="rounded-xl border border-black/5 p-4">
+                  <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-(--color-muted)">
+                    <CreditCard size={13} /> Paiement
+                  </p>
+                  <p className="text-sm text-(--color-ink)">{PAYMENT_METHOD_LABELS[detailOrder.paymentMethod]}</p>
+                  <p className={`text-sm font-semibold ${detailOrder.isPaid ? 'text-green-600' : 'text-amber-600'}`}>
+                    {detailOrder.isPaid ? 'Payée' : 'Non payée'}
+                  </p>
+                </div>
+
+                {/* Items */}
+                <div className="rounded-xl border border-black/5 p-4">
+                  <p className="mb-3 text-xs font-bold uppercase tracking-wide text-(--color-muted)">Articles</p>
+                  <div className="flex flex-col gap-3">
+                    {detailOrder.orderItems.map((item, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        {item.image
+                          ? <img src={item.image} alt={item.name} className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+                          : <div className="h-12 w-12 shrink-0 rounded-lg bg-(--color-cream)" />
+                        }
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-(--color-ink)">{item.name}</p>
+                          {(item.variant?.size || item.variant?.color) && (
+                            <p className="text-xs text-(--color-muted)">{[item.variant.size, item.variant.color].filter(Boolean).join(' / ')}</p>
+                          )}
+                          <p className="text-xs text-(--color-muted)">Qté : {item.quantity}</p>
+                        </div>
+                        <span className="shrink-0 text-sm font-semibold text-(--color-accent-dark)">
+                          {formatPrice(item.price * item.quantity)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 border-t border-black/5 pt-4 text-sm">
+                    <div className="flex justify-between text-(--color-muted)">
+                      <span>Sous-total</span>
+                      <span>{formatPrice(detailOrder.subtotal)}</span>
+                    </div>
+                    <div className="mt-1 flex justify-between text-(--color-muted)">
+                      <span>Livraison</span>
+                      <span>{formatPrice(detailOrder.shippingPrice)}</span>
+                    </div>
+                    <div className="mt-2 flex justify-between text-base font-bold text-(--color-ink)">
+                      <span>Total</span>
+                      <span>{formatPrice(detailOrder.totalPrice)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick status change */}
+                {(VALID_TRANSITIONS[detailOrder.status] ?? []).length > 0 && (
+                  <div className="rounded-xl border border-black/5 p-4">
+                    <p className="mb-2 text-xs font-bold uppercase tracking-wide text-(--color-muted)">Changer le statut</p>
+                    <select
+                      defaultValue=""
+                      onChange={(e) => {
+                        if (!e.target.value) return;
+                        statusMutation.mutate({ id: detailOrder._id, status: e.target.value });
+                        setSelectedOrderId(null);
+                      }}
+                      disabled={statusMutation.isPending}
+                      className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-(--color-accent)"
+                    >
+                      <option value="">— choisir le prochain statut —</option>
+                      {VALID_TRANSITIONS[detailOrder.status].map((t) => (
+                        <option key={t} value={t}>{ORDER_STATUS_LABELS[t]}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

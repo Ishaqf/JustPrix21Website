@@ -76,44 +76,63 @@ const OrderHistory = () => {
           <div key={group.label}>
             <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-(--color-muted)">{group.label}</h2>
             <div className="flex flex-col gap-3">
-              {group.orders.map((order) => (
-                <div key={order._id} className="rounded-xl bg-white p-4 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <Link to={`/orders/${order._id}`} className="text-sm font-semibold text-(--color-ink)">
-                      Commande #{order._id.slice(-8).toUpperCase()}
+              {group.orders.map((order) => {
+                const firstItem = order.orderItems?.[0];
+                const extraCount = (order.orderItems?.length ?? 1) - 1;
+                return (
+                  <div key={order._id} className="rounded-xl bg-white shadow-sm transition-shadow hover:shadow-md">
+                    <Link to={`/orders/${order._id}`} className="block p-4">
+                      <div className="flex items-start gap-3">
+                        {/* First item thumbnail */}
+                        {firstItem?.image
+                          ? <img src={firstItem.image} alt={firstItem.name} className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+                          : <div className="h-14 w-14 shrink-0 rounded-lg bg-(--color-cream)" />
+                        }
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="font-semibold text-(--color-ink)">Commande #{order._id.slice(-8).toUpperCase()}</p>
+                            <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${ORDER_STATUS_COLORS[order.status]}`}>
+                              {ORDER_STATUS_LABELS[order.status]}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 truncate text-sm text-(--color-muted)">
+                            {firstItem?.name}{extraCount > 0 ? ` +${extraCount} article${extraCount > 1 ? 's' : ''}` : ''}
+                          </p>
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className="text-sm font-bold text-(--color-accent-dark)">{formatPrice(order.totalPrice)}</span>
+                            <span className="text-xs text-(--color-muted)">{formatDate(order.createdAt)}</span>
+                          </div>
+                        </div>
+                      </div>
                     </Link>
-                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${ORDER_STATUS_COLORS[order.status]}`}>
-                      {ORDER_STATUS_LABELS[order.status]}
-                    </span>
+
+                    {(order.status === 'pending' || order.status === 'cancelled') && (
+                      <div className="border-t border-black/5 px-4 py-2">
+                        {order.status === 'pending' && (
+                          <button
+                            type="button"
+                            onClick={() => cancelMutation.mutate(order._id)}
+                            disabled={cancelMutation.isPending}
+                            className="text-xs font-semibold text-red-600 hover:underline disabled:opacity-50"
+                          >
+                            Annuler la commande
+                          </button>
+                        )}
+                        {order.status === 'cancelled' && (
+                          <button
+                            type="button"
+                            onClick={() => hideMutation.mutate(order._id)}
+                            disabled={hideMutation.isPending}
+                            className="text-xs font-semibold text-(--color-muted) hover:underline disabled:opacity-50"
+                          >
+                            Masquer
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <p className="mt-1 text-xs text-(--color-muted)">{formatDate(order.createdAt)}</p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-sm font-bold text-(--color-accent-dark)">{formatPrice(order.totalPrice)}</span>
-                    <div className="flex gap-2">
-                      {order.status === 'pending' && (
-                        <button
-                          type="button"
-                          onClick={() => cancelMutation.mutate(order._id)}
-                          disabled={cancelMutation.isPending}
-                          className="rounded-full border border-red-200 px-4 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
-                        >
-                          Annuler
-                        </button>
-                      )}
-                      {order.status === 'cancelled' && (
-                        <button
-                          type="button"
-                          onClick={() => hideMutation.mutate(order._id)}
-                          disabled={hideMutation.isPending}
-                          className="rounded-full border border-black/10 px-4 py-1.5 text-xs font-semibold text-(--color-muted) hover:bg-(--color-cream) disabled:opacity-50"
-                        >
-                          Masquer
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}
