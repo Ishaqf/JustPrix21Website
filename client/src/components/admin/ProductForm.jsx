@@ -82,7 +82,7 @@ const ProductForm = ({ product, onClose, onSaved }) => {
     watch,
     setValue,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm({
     defaultValues: {
       name: product?.name ?? '',
@@ -194,20 +194,27 @@ const ProductForm = ({ product, onClose, onSaved }) => {
   const labelClass = 'mb-1 block text-xs font-semibold text-(--color-muted)';
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      {/* Backdrop */}
-      <div className="flex-1 bg-black/40" onClick={onClose} />
+    <div className="fixed inset-0 z-50">
+      {/* Backdrop — absolute so it covers full screen without affecting panel layout */}
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
-      {/* Panel */}
-      <div className="flex h-full w-full max-w-xl flex-col overflow-y-auto bg-white shadow-2xl">
+      {/* Panel: CSS grid with 3 explicit rows — header (auto), scrollable
+          content (1fr = all remaining space), footer (auto). Grid tracks
+          have no min-height ambiguity, so the footer is always fully
+          visible and clickable regardless of content height. */}
+      <div className="absolute inset-y-0 right-0 grid w-full max-w-xl grid-rows-[auto_1fr_auto] bg-white shadow-2xl">
+
+        {/* Row 1 — header */}
         <div className="flex items-center justify-between border-b border-black/5 px-5 py-4">
           <h2 className="text-lg font-bold text-(--color-ink)">{isEdit ? 'Modifier le produit' : 'Nouveau produit'}</h2>
-          <button type="button" onClick={onClose} className="text-(--color-muted) hover:text-(--color-ink)">
+          <button type="button" onClick={onClose} className="cursor-pointer text-(--color-muted) hover:text-(--color-ink)">
             <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 px-5 py-5">
+        {/* Row 2 — scrollable form body */}
+        <form noValidate onSubmit={handleSubmit(onSubmit)} className="overflow-y-auto">
+          <div className="flex flex-col gap-5 px-5 py-5">
           {/* Images */}
           <div>
             <p className={labelClass}>Images</p>
@@ -405,21 +412,26 @@ const ProductForm = ({ product, onClose, onSaved }) => {
               ))}
             </div>
           </div>
-
-          {/* Actions */}
-          <div className="flex gap-3 border-t border-black/5 pt-4">
-            <button type="button" onClick={onClose} className="flex-1 rounded-full border border-black/10 py-2.5 text-sm font-medium text-(--color-ink) hover:bg-(--color-cream)">
-              Annuler
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 rounded-full bg-(--color-accent) py-2.5 text-sm font-semibold text-white hover:bg-(--color-accent-dark) disabled:opacity-50"
-            >
-              {isSubmitting ? 'Sauvegarde...' : isEdit ? 'Mettre à jour' : 'Créer'}
-            </button>
           </div>
         </form>
+
+        {/* Row 3 — footer (outside the form so it never scrolls) */}
+        <div className="flex gap-3 border-t border-black/5 px-5 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 cursor-pointer rounded-full border border-black/10 py-2.5 text-sm font-medium text-(--color-ink) hover:bg-(--color-cream)"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit(onSubmit)}
+            className="flex-1 cursor-pointer rounded-full bg-(--color-accent) py-2.5 text-sm font-semibold text-white hover:bg-(--color-accent-dark)"
+          >
+            {isEdit ? 'Mettre à jour' : 'Créer'}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -85,7 +85,7 @@ const ReelForm = ({ reel, onClose, onSaved }) => {
     reel?.products?.map((p) => ({ _id: p._id ?? p, name: p.name ?? '—' })) ?? []
   );
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       instagramUrl: reel?.instagramUrl ?? '',
       title: reel?.title ?? '',
@@ -119,53 +119,65 @@ const ReelForm = ({ reel, onClose, onSaved }) => {
   const labelClass = 'mb-1 block text-xs font-semibold text-(--color-muted)';
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black/40" onClick={onClose} />
-      <div className="flex h-full w-full max-w-lg flex-col overflow-y-auto bg-white shadow-2xl">
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="absolute inset-y-0 right-0 grid w-full max-w-lg grid-rows-[auto_1fr_auto] bg-white shadow-2xl">
+
+        {/* Row 1 — header */}
         <div className="flex items-center justify-between border-b border-black/5 px-5 py-4">
           <h2 className="text-lg font-bold text-(--color-ink)">{isEdit ? "Modifier l'affaire" : 'Nouvelle affaire'}</h2>
-          <button type="button" onClick={onClose} className="text-(--color-muted) hover:text-(--color-ink)"><X size={20} /></button>
+          <button type="button" onClick={onClose} className="cursor-pointer text-(--color-muted) hover:text-(--color-ink)"><X size={20} /></button>
         </div>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 p-5">
-          <div>
-            <label className={labelClass}>URL Instagram *</label>
-            <input {...register('instagramUrl', { required: true })} placeholder="https://www.instagram.com/reel/..." className={fieldClass} />
-            {errors.instagramUrl && <p className="mt-1 text-xs text-red-600">URL Instagram obligatoire</p>}
-          </div>
-          <div>
-            <label className={labelClass}>Titre *</label>
-            <input {...register('title', { required: true, maxLength: 150 })} className={fieldClass} />
-            {errors.title && <p className="mt-1 text-xs text-red-600">Titre obligatoire (max 150 car.)</p>}
-          </div>
-          <div className="grid grid-cols-2 gap-3">
+
+        {/* Row 2 — scrollable form body */}
+        <form noValidate onSubmit={handleSubmit(onSubmit)} className="overflow-y-auto">
+          <div className="flex flex-col gap-4 p-5">
             <div>
-              <label className={labelClass}>Badge</label>
-              <select {...register('badge')} className={fieldClass}>
-                {BADGES.map((b) => <option key={b} value={b}>{b}</option>)}
-              </select>
+              <label className={labelClass}>URL Instagram *</label>
+              <input {...register('instagramUrl', { required: true })} placeholder="https://www.instagram.com/reel/..." className={fieldClass} />
+              {errors.instagramUrl && <p className="mt-1 text-xs text-red-600">URL Instagram obligatoire</p>}
             </div>
             <div>
-              <label className={labelClass}>Ordre d'affichage</label>
-              <input type="number" {...register('order')} className={fieldClass} />
+              <label className={labelClass}>Titre *</label>
+              <input {...register('title', { required: true, maxLength: 150 })} className={fieldClass} />
+              {errors.title && <p className="mt-1 text-xs text-red-600">Titre obligatoire (max 150 car.)</p>}
             </div>
-          </div>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-(--color-ink)">
-            <input type="checkbox" {...register('isActive')} className="rounded" />
-            Affaire active (visible sur le site)
-          </label>
-          <div>
-            <label className={labelClass}>Produits liés (1–10) *</label>
-            <ProductPicker selected={selectedProducts} onChange={setSelectedProducts} />
-          </div>
-          <div className="flex gap-3 border-t border-black/5 pt-4">
-            <button type="button" onClick={onClose} className="flex-1 rounded-full border border-black/10 py-2.5 text-sm font-medium text-(--color-ink) hover:bg-(--color-cream)">
-              Annuler
-            </button>
-            <button type="submit" disabled={isSubmitting} className="flex-1 rounded-full bg-(--color-accent) py-2.5 text-sm font-semibold text-white hover:bg-(--color-accent-dark) disabled:opacity-50">
-              {isSubmitting ? 'Sauvegarde...' : isEdit ? 'Mettre à jour' : 'Créer'}
-            </button>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>Badge</label>
+                <select {...register('badge')} className={fieldClass}>
+                  {BADGES.map((b) => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Ordre d'affichage</label>
+                <input type="number" {...register('order')} className={fieldClass} />
+              </div>
+            </div>
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-(--color-ink)">
+              <input type="checkbox" {...register('isActive')} className="rounded" />
+              Affaire active (visible sur le site)
+            </label>
+            <div>
+              <label className={labelClass}>Produits liés (1–10) *</label>
+              <ProductPicker selected={selectedProducts} onChange={setSelectedProducts} />
+            </div>
           </div>
         </form>
+
+        {/* Row 3 — footer (outside form, always visible) */}
+        <div className="flex gap-3 border-t border-black/5 px-5 py-4">
+          <button type="button" onClick={onClose} className="flex-1 cursor-pointer rounded-full border border-black/10 py-2.5 text-sm font-medium text-(--color-ink) hover:bg-(--color-cream)">
+            Annuler
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit(onSubmit)}
+            className="flex-1 cursor-pointer rounded-full bg-(--color-accent) py-2.5 text-sm font-semibold text-white hover:bg-(--color-accent-dark)"
+          >
+            {isEdit ? 'Mettre à jour' : 'Créer'}
+          </button>
+        </div>
       </div>
     </div>
   );
