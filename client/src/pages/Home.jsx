@@ -97,13 +97,13 @@ const Home = () => {
             </div>
 
             <div>
-              <h2 className="mb-4 text-xl font-bold text-(--color-ink)">Vu sur Instagram</h2>
+              <h2 className="mb-3 text-xl font-bold text-(--color-ink)">Vu sur Instagram</h2>
               {reelsError && <p className="text-sm text-(--color-muted)">Impossible de charger les affaires.</p>}
               {!reelsError && (
-                <div className="flex flex-col gap-2">
+                <div className="flex h-128 flex-col gap-1 overflow-y-auto rounded-2xl bg-white p-3 shadow-sm scrollbar-none">
                   {reelsLoading
                     ? Array.from({ length: 4 }).map((_, i) => <ReelCardSkeleton key={i} variant="compact" />)
-                    : activeReels.slice(0, 5).map((reel) => (
+                    : activeReels.map((reel) => (
                         <ReelCard key={reel._id} reel={reel} variant="compact" />
                       ))}
                 </div>
@@ -124,11 +124,19 @@ const Home = () => {
       {(reelsLoading || activeReels.length > 0) && !reelsError && (
         <section className="mx-auto max-w-7xl px-4 py-8">
           <h2 className="mb-4 text-xl font-bold text-(--color-ink)">Affaires en cours</h2>
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4">
+          <SlidingRow>
             {reelsLoading
-              ? Array.from({ length: 4 }).map((_, i) => <ReelCardSkeleton key={i} />)
-              : activeReels.map((reel) => <ReelCard key={reel._id} reel={reel} />)}
-          </div>
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="w-72 shrink-0">
+                    <ReelCardSkeleton />
+                  </div>
+                ))
+              : activeReels.map((reel) => (
+                  <div key={reel._id} className="w-72 shrink-0">
+                    <ReelCard reel={reel} />
+                  </div>
+                ))}
+          </SlidingRow>
         </section>
       )}
 
