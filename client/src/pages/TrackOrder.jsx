@@ -40,6 +40,8 @@ const TrackOrder = () => {
         />
         <input
           {...register('phone', { required: true })}
+          type="tel"
+          inputMode="tel"
           placeholder="Téléphone"
           className="flex-1 rounded-md border border-black/10 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-(--color-accent)"
         />

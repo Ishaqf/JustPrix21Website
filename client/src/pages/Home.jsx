@@ -65,7 +65,7 @@ const Home = () => {
               Découvrir la boutique
             </Link>
 
-            <h2 className="mt-10 mb-4 text-lg font-bold text-(--color-ink)">Produits en vedette</h2>
+            <h2 className="mt-10 mb-4 text-xl font-bold text-(--color-ink)">Produits en vedette</h2>
             {productsError && <p className="text-sm text-(--color-muted)">Impossible de charger les produits.</p>}
             {!productsError && (
               <SlidingRow>
@@ -88,7 +88,7 @@ const Home = () => {
           </div>
 
           <div>
-            <h2 className="mb-4 text-lg font-bold text-(--color-ink)">Vu sur Instagram</h2>
+            <h2 className="mb-4 text-xl font-bold text-(--color-ink)">Vu sur Instagram</h2>
             {reelsError && <p className="text-sm text-(--color-muted)">Impossible de charger les affaires.</p>}
             {!reelsError && (
               <div className="flex flex-col gap-2">
@@ -107,14 +107,14 @@ const Home = () => {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8">
-        <h2 className="mb-4 text-lg font-bold text-(--color-ink)">Catégories</h2>
+        <h2 className="mb-4 text-xl font-bold text-(--color-ink)">Catégories</h2>
         <CategoryGrid />
       </section>
 
       {(reelsLoading || activeReels.length > 0) && !reelsError && (
         <section className="mx-auto max-w-7xl px-4 py-8">
-          <h2 className="mb-4 text-lg font-bold text-(--color-ink)">Affaires en cours</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+          <h2 className="mb-4 text-xl font-bold text-(--color-ink)">Affaires en cours</h2>
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4">
             {reelsLoading
               ? Array.from({ length: 4 }).map((_, i) => <ReelCardSkeleton key={i} />)
               : activeReels.map((reel) => <ReelCard key={reel._id} reel={reel} />)}
@@ -124,8 +124,8 @@ const Home = () => {
 
       {(productsLoading || featuredProducts.length > 0) && !productsError && (
         <section className="mx-auto max-w-7xl px-4 py-8">
-          <h2 className="mb-4 text-lg font-bold text-(--color-ink)">Tous les produits vedettes</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+          <h2 className="mb-4 text-xl font-bold text-(--color-ink)">Tous les produits vedettes</h2>
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {productsLoading
               ? Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)
               : featuredProducts.map((product) => <ProductCard key={product._id} product={product} />)}
@@ -134,10 +134,10 @@ const Home = () => {
       )}
 
       <section className="mx-auto max-w-7xl px-4 py-8">
-        <h2 className="mb-4 text-lg font-bold text-(--color-ink)">Pourquoi JustPrix21</h2>
+        <h2 className="mb-4 text-xl font-bold text-(--color-ink)">Pourquoi JustPrix21</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           {VALUE_PROPS.map(({ icon: Icon, title, text }) => (
-            <div key={title} className="rounded-xl bg-white p-5 shadow-sm">
+            <div key={title} className="rounded-2xl bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
               <Icon size={24} className="text-(--color-accent-dark)" />
               <p className="mt-3 font-semibold text-(--color-ink)">{title}</p>
               <p className="mt-1 text-sm text-(--color-muted)">{text}</p>

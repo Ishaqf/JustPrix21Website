@@ -37,12 +37,12 @@ const ProductCard = ({ product }) => {
 
   return (
     <Link to={`/products/${product.slug || product._id}`} className="group block w-full">
-      <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-white">
+      <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-200 group-hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
         {product.thumbnail ? (
           <img
             src={product.thumbnail}
             alt={product.name}
-            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
           <ImageOff size={32} className="text-(--color-muted)" />
@@ -60,6 +60,12 @@ const ProductCard = ({ product }) => {
           />
         </button>
 
+        {onSale && (
+          <span className="absolute left-2 top-2 rounded-full bg-(--color-accent) px-2 py-0.5 text-[10px] font-bold text-white">
+            Promo
+          </span>
+        )}
+
         {outOfStock && (
           <span className="absolute bottom-2 left-2 rounded-md bg-(--color-ink) px-2 py-1 text-[10px] font-semibold text-white">
             Rupture de stock
@@ -67,7 +73,7 @@ const ProductCard = ({ product }) => {
         )}
       </div>
 
-      <p className="mt-2 truncate text-sm font-medium text-(--color-ink)">{product.name}</p>
+      <p className="mt-2.5 truncate text-sm font-medium text-(--color-ink)">{product.name}</p>
 
       <div className="mt-1 flex items-center gap-2">
         <span className="text-sm font-bold text-(--color-accent-dark)">

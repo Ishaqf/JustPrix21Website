@@ -119,6 +119,8 @@ const Profile = () => {
               <label className="mb-1 block text-xs font-semibold text-(--color-muted)">Téléphone</label>
               <input
                 {...register('phone')}
+                type="tel"
+                inputMode="tel"
                 placeholder="0778916345"
                 className="w-full rounded-md border border-black/10 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-(--color-accent)"
               />

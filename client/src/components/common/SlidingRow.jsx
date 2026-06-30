@@ -22,7 +22,7 @@ const SlidingRow = ({ children }) => {
         <ChevronLeft size={18} />
       </button>
 
-      <div ref={scrollRef} className="flex gap-4 overflow-x-auto scroll-smooth pb-2 scrollbar-none">
+      <div ref={scrollRef} className="flex gap-4 overflow-x-auto scroll-smooth py-3 scrollbar-none">
         {children}
       </div>
 
