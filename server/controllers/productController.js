@@ -109,6 +109,8 @@ const getProducts = asyncHandler(async (req, res) => {
     price_asc: { price: 1 },
     price_desc: { price: -1 },
     rating: { rating: -1 },
+    stock_asc: { stock: 1 },
+    stock_desc: { stock: -1 },
   };
   const sortOption = sortMap[sort] || sortMap.newest;
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PlusCircle, Pencil, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Search, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { getProducts, deleteProduct } from '../../api/products';
 import useToastStore from '../../store/toastStore';
 import { formatPrice } from '../../utils/formatters';
@@ -15,11 +15,17 @@ const ManageProducts = () => {
   const [category, setCategory] = useState('');
   const [isActive, setIsActive] = useState('');
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState('newest');
   const [formProduct, setFormProduct] = useState(undefined); // undefined=closed, null=create, product=edit
   const showToast = useToastStore((s) => s.showToast);
   const queryClient = useQueryClient();
 
-  const queryParams = { search: search || undefined, category: category || undefined, isActive: isActive || undefined, page, limit: LIMIT, sort: 'newest' };
+  const queryParams = { search: search || undefined, category: category || undefined, isActive: isActive || undefined, page, limit: LIMIT, sort };
+
+  const toggleStockSort = () => {
+    setSort((prev) => (prev === 'stock_asc' ? 'stock_desc' : 'stock_asc'));
+    setPage(1);
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'products', queryParams],
@@ -97,7 +103,18 @@ const ManageProducts = () => {
               <th className="px-4 py-3 text-left font-semibold">Produit</th>
               <th className="px-4 py-3 text-left font-semibold">Catégorie</th>
               <th className="px-4 py-3 text-right font-semibold">Prix</th>
-              <th className="px-4 py-3 text-right font-semibold">Stock</th>
+              <th className="px-4 py-3 text-right font-semibold">
+                <button
+                  type="button"
+                  onClick={toggleStockSort}
+                  className="inline-flex items-center gap-1 hover:text-(--color-ink)"
+                >
+                  Stock
+                  {sort === 'stock_asc' && <ArrowUp size={13} className="text-(--color-accent-dark)" />}
+                  {sort === 'stock_desc' && <ArrowDown size={13} className="text-(--color-accent-dark)" />}
+                  {sort !== 'stock_asc' && sort !== 'stock_desc' && <ArrowUpDown size={13} className="opacity-40" />}
+                </button>
+              </th>
               <th className="px-4 py-3 text-center font-semibold">Statut</th>
               <th className="px-4 py-3" />
             </tr>
