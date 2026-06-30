@@ -21,6 +21,9 @@ import Profile from './pages/Profile';
 import Wishlist from './pages/Wishlist';
 import NotFound from './pages/NotFound';
 import AdminDashboard from './pages/admin/Dashboard';
+import ManageProducts from './pages/admin/ManageProducts';
+import ManageOrders from './pages/admin/ManageOrders';
+import ManageReels from './pages/admin/ManageReels';
 
 const router = createBrowserRouter([
   {
@@ -55,7 +58,12 @@ const router = createBrowserRouter([
     children: [
       {
         element: <AdminLayout />,
-        children: [{ index: true, element: <AdminDashboard /> }],
+        children: [
+          { index: true, element: <AdminDashboard /> },
+          { path: 'products', element: <ManageProducts /> },
+          { path: 'orders', element: <ManageOrders /> },
+          { path: 'reels', element: <ManageReels /> },
+        ],
       },
     ],
   },

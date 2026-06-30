@@ -67,9 +67,20 @@ const applyWritableFields = (res, target, body) => {
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
-  const { search, category, brand, minPrice, maxPrice, isFeatured, sort, page = 1, limit = 12 } = req.query;
+  const { search, category, brand, minPrice, maxPrice, isFeatured, isActive, sort, page = 1, limit = 12 } = req.query;
 
-  const filter = { isActive: true };
+  const isAdmin = req.user?.role === 'admin';
+
+  // Admin can see all products regardless of isActive; public always sees
+  // active only. An admin can also pass isActive=false to filter specifically
+  // for inactive products in ManageProducts.jsx.
+  const filter = {};
+  if (!isAdmin) {
+    filter.isActive = true;
+  } else if (isActive !== undefined) {
+    filter.isActive = String(isActive) === 'true';
+  }
+
   if (category) filter.category = category;
   if (brand) filter.brand = brand;
   if (isFeatured !== undefined) filter.isFeatured = String(isFeatured) === 'true';

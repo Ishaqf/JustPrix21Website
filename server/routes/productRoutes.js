@@ -13,7 +13,7 @@ const validateRequest = require('../middleware/validateRequest');
 const sanitizeRequest = require('../middleware/sanitizeRequest');
 const { createProductValidator, updateProductValidator } = require('../middleware/validators/productValidators');
 
-router.get('/', getProducts);
+router.get('/', optionalAuth, getProducts);
 router.get('/:id', optionalAuth, getProduct);
 
 // sanitizeRequest runs again here (it's already mounted globally in

@@ -24,7 +24,9 @@ const findInvalidProductIds = async (ids) => {
 // @route   GET /api/reels
 // @access  Public
 const getReels = asyncHandler(async (req, res) => {
-  const reels = await Reel.find({ isActive: true })
+  const isAdmin = req.user?.role === 'admin';
+  const filter = isAdmin ? {} : { isActive: true };
+  const reels = await Reel.find(filter)
     .sort({ order: 1 })
     .populate('products', POPULATE_FIELDS);
 
