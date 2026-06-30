@@ -1,5 +1,9 @@
 import { Component } from 'react';
+import ErrorPage from './ErrorPage';
 
+// Class component required — React error boundaries can only be implemented
+// as class components (getDerivedStateFromError / componentDidCatch have no
+// hook equivalents). Wraps the entire app in main.jsx.
 class ErrorBoundary extends Component {
   state = { hasError: false };
 
@@ -13,12 +17,7 @@ class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
-      return (
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <h1>Une erreur est survenue</h1>
-          <p>Veuillez rafraîchir la page.</p>
-        </div>
-      );
+      return <ErrorPage type="500" />;
     }
     return this.props.children;
   }

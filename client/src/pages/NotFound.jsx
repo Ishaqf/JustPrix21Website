@@ -1,11 +1,5 @@
-import { Link } from 'react-router-dom';
+import ErrorPage from '../components/common/ErrorPage';
 
-const NotFound = () => (
-  <div style={{ padding: '2rem', textAlign: 'center' }}>
-    <h1>404</h1>
-    <p>Page introuvable.</p>
-    <Link to="/">Retour à l'accueil</Link>
-  </div>
-);
+const NotFound = () => <ErrorPage type="404" />;
 
 export default NotFound;
