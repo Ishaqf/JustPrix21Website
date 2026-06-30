@@ -2,8 +2,9 @@ const mongoose = require('mongoose');
 const asyncHandler = require('express-async-handler');
 const Reel = require('../models/Reel');
 const Product = require('../models/Product');
+const { uploadImage } = require('../utils/cloudinary');
 
-const WRITABLE_FIELDS = ['instagramUrl', 'title', 'badge', 'products', 'order', 'isActive'];
+const WRITABLE_FIELDS = ['instagramUrl', 'title', 'badge', 'thumbnailUrl', 'products', 'order', 'isActive'];
 const POPULATE_FIELDS = 'name slug price salePrice images stock';
 
 // Treats a malformed id the same as a missing one — both are "invalid" from
@@ -115,4 +116,17 @@ const deleteReel = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: 'Affaire supprimée', data: { _id: reel._id } });
 });
 
-module.exports = { getReels, getReel, createReel, updateReel, deleteReel };
+// @desc    Upload a reel thumbnail image to Cloudinary
+// @route   POST /api/reels/upload-thumbnail
+// @access  Private/Admin
+const uploadThumbnail = asyncHandler(async (req, res) => {
+  const file = req.files?.[0];
+  if (!file) {
+    res.status(400);
+    throw new Error('Aucun fichier fourni');
+  }
+  const { url } = await uploadImage(file.buffer, 'justprix21/reels');
+  res.status(200).json({ success: true, message: 'Image uploadée', data: { url } });
+});
+
+module.exports = { getReels, getReel, createReel, updateReel, deleteReel, uploadThumbnail };

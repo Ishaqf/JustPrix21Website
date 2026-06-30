@@ -3,7 +3,6 @@ import MainLayout from './components/layout/MainLayout';
 import AdminLayout from './components/layout/AdminLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import AdminRoute from './components/common/AdminRoute';
-import WhatsAppButton from './components/common/WhatsAppButton';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -70,11 +69,6 @@ const router = createBrowserRouter([
   { path: '*', element: <NotFound /> },
 ]);
 
-const App = () => (
-  <>
-    <RouterProvider router={router} />
-    <WhatsAppButton />
-  </>
-);
+const App = () => <RouterProvider router={router} />;
 
 export default App;

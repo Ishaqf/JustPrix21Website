@@ -23,6 +23,7 @@ const ReelSchema = new mongoose.Schema(
       default: 'Promo',
     },
     products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true }],
+    thumbnailUrl: { type: String, default: '' },
     order:    { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
   },

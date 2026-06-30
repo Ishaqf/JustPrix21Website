@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import WhatsAppButton from '../common/WhatsAppButton';
 import ErrorPage from '../common/ErrorPage';
 import useAppStore from '../../store/appStore';
 
@@ -33,6 +34,7 @@ const MainLayout = () => {
         <Outlet />
       </main>
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 };

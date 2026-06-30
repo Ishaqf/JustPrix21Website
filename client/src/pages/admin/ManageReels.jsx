@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { PlusCircle, Pencil, Trash2, X, Search, Film } from 'lucide-react';
-import { getReels, createReel, updateReel, deleteReel } from '../../api/reels';
+import { getReels, createReel, updateReel, deleteReel, uploadReelThumbnail } from '../../api/reels';
 import { getProducts } from '../../api/products';
 import useToastStore from '../../store/toastStore';
+import { ImagePlus } from 'lucide-react';
 import Skeleton from '../../components/common/Skeleton';
 
 const BADGES = ['Promo', 'Pack', 'Affaire du jour', 'Nouveauté'];
@@ -84,16 +85,36 @@ const ReelForm = ({ reel, onClose, onSaved }) => {
   const [selectedProducts, setSelectedProducts] = useState(
     reel?.products?.map((p) => ({ _id: p._id ?? p, name: p.name ?? '—' })) ?? []
   );
+  const [thumbnailPreview, setThumbnailPreview] = useState(reel?.thumbnailUrl ?? '');
+  const [thumbnailUploading, setThumbnailUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
     defaultValues: {
       instagramUrl: reel?.instagramUrl ?? '',
       title: reel?.title ?? '',
       badge: reel?.badge ?? 'Promo',
+      thumbnailUrl: reel?.thumbnailUrl ?? '',
       order: reel?.order ?? 0,
       isActive: reel?.isActive ?? true,
     },
   });
+
+  const handleThumbnailFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setThumbnailUploading(true);
+    try {
+      const res = await uploadReelThumbnail(file);
+      const url = res.data.data.url;
+      setValue('thumbnailUrl', url);
+      setThumbnailPreview(url);
+    } catch {
+      showToast('error', "Erreur lors de l'upload de l'image");
+    } finally {
+      setThumbnailUploading(false);
+    }
+  };
 
   const onSubmit = async (formData) => {
     if (selectedProducts.length === 0) {
@@ -136,6 +157,50 @@ const ReelForm = ({ reel, onClose, onSaved }) => {
               <label className={labelClass}>URL Instagram *</label>
               <input {...register('instagramUrl', { required: true })} placeholder="https://www.instagram.com/reel/..." className={fieldClass} />
               {errors.instagramUrl && <p className="mt-1 text-xs text-red-600">URL Instagram obligatoire</p>}
+            </div>
+            {/* Hidden field keeps the Cloudinary URL in the form payload */}
+            <input type="hidden" {...register('thumbnailUrl')} />
+            <div>
+              <label className={labelClass}>Image de couverture</label>
+              <div className="flex items-center gap-3">
+                {thumbnailPreview ? (
+                  <div className="relative h-20 w-20 shrink-0">
+                    <img src={thumbnailPreview} alt="" className="h-full w-full rounded-lg object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => { setThumbnailPreview(''); setValue('thumbnailUrl', ''); }}
+                      className="absolute -right-1 -top-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-red-500 text-white"
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex h-20 w-20 shrink-0 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-black/20 text-(--color-muted) hover:border-(--color-accent)"
+                  >
+                    <ImagePlus size={20} />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <button
+                    type="button"
+                    disabled={thumbnailUploading}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="cursor-pointer rounded-full border border-black/10 px-4 py-2 text-sm font-medium text-(--color-ink) hover:bg-(--color-cream) disabled:opacity-50"
+                  >
+                    {thumbnailUploading ? 'Upload...' : thumbnailPreview ? 'Changer l\'image' : 'Choisir une image'}
+                  </button>
+                  <p className="mt-1 text-xs text-(--color-muted)">PNG, JPG, WEBP</p>
+                </div>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleThumbnailFile}
+              />
             </div>
             <div>
               <label className={labelClass}>Titre *</label>
