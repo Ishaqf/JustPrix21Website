@@ -18,7 +18,7 @@ const useWishlist = () => {
   const fetchWishlist = useCallback(async () => {
     try {
       const { data } = await wishlistApi.getWishlist();
-      setItems(data);
+      setItems(data.data);
     } catch {
       // Not logged in / request failed — leave the wishlist empty.
     }
@@ -29,7 +29,7 @@ const useWishlist = () => {
       optimisticAdd(product);
       try {
         const { data } = await wishlistApi.addToWishlist(product._id);
-        setItems(data);
+        setItems(data.data);
       } catch {
         optimisticRemove(product._id);
         showToast('error', "Impossible d'ajouter ce produit à la liste de souhaits");
@@ -44,7 +44,7 @@ const useWishlist = () => {
       optimisticRemove(productId);
       try {
         const { data } = await wishlistApi.removeFromWishlist(productId);
-        setItems(data);
+        setItems(data.data);
       } catch {
         setItems(previous);
         showToast('error', 'Impossible de retirer ce produit de la liste de souhaits');

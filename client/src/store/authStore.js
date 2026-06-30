@@ -33,14 +33,14 @@ const useAuthStore = create((set, get) => ({
 
   login: async (email, password) => {
     const { data } = await loginApi({ email, password });
-    get().setAuth(data);
-    return data;
+    get().setAuth(data.data);
+    return data.data;
   },
 
   loginWithGoogle: async (credential) => {
     const { data } = await googleAuthApi(credential);
-    get().setAuth(data);
-    return data;
+    get().setAuth(data.data);
+    return data.data;
   },
 
   logout: () => {
@@ -60,7 +60,7 @@ const useAuthStore = create((set, get) => ({
   // promotion), so the stored user doesn't go stale.
   refreshUser: async () => {
     const { data } = await getMe();
-    const merged = { ...get().user, ...data };
+    const merged = { ...get().user, ...data.data };
     localStorage.setItem('jp_user', JSON.stringify(merged));
     set({ user: merged });
     return merged;

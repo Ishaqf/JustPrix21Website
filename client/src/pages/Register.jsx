@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
+import GoogleSignInButton from '../components/common/GoogleSignInButton';
 import { register as registerApi } from '../api/users';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
@@ -110,9 +110,8 @@ const Register = () => {
         </div>
 
         <div className="flex justify-center">
-          <GoogleLogin
-            locale="fr_FR"
-            onSuccess={handleGoogleSuccess}
+          <GoogleSignInButton
+            onCredential={handleGoogleSuccess}
             onError={() => showToast('error', 'Connexion Google impossible')}
           />
         </div>
