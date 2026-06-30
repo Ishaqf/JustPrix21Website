@@ -12,7 +12,7 @@ const SlidingRow = ({ children }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <button
         type="button"
         onClick={() => scrollByAmount(-1)}

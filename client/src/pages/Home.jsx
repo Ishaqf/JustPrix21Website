@@ -52,7 +52,7 @@ const Home = () => {
     <div>
       <section className="mx-auto max-w-7xl px-4 py-8">
         <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+          <div className="min-w-0 lg:col-span-2">
             <Logo className="h-16" />
             <p className="mt-4 max-w-md text-(--color-muted)">
               Téléphones, accessoires, téléviseurs, consoles et ordinateurs portables — au juste prix,
